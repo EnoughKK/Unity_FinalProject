@@ -9,8 +9,16 @@ public class PlayerCtrl : MonoBehaviour
     public float moveSpeed = 10.0f;
     public float turnSpeed = 1000.0f;
 
+    private readonly float initHp = 100.0f;
+    public float currHp;
+
+    public delegate void PlayerDieHandler();
+    public static event PlayerDieHandler OnPlayerDie;
+
     IEnumerator Start()
     {
+        currHp = initHp;
+
         tr = GetComponent<Transform>();
         anim = GetComponent<Animation>();
 
@@ -58,5 +66,34 @@ public class PlayerCtrl : MonoBehaviour
         {
             anim.CrossFade("Idle", 0.25f);
         }
+    }
+
+    private void OnTriggerEnter(Collider coll)
+    {
+        if(currHp >= 0.0f && coll.CompareTag("PUNCH"))
+        {
+            currHp -= 10.0f;
+            Debug.Log($"Player hp = {currHp / initHp}");
+
+            if(currHp <= 0.0f)
+            {
+                PlayerDie();
+            }
+        }
+    }
+
+    void PlayerDie()
+    {
+        Debug.Log("player Die !");
+        /*
+        GameObject[] monsters = GameObject.FindGameObjectsWithTag("MONSTER");
+
+        // 모든 몬스터의 OnPlayerDie 함수를 순차적으로 호출
+        foreach (GameObject monster in monsters)
+        {
+            monster.SendMessage("OnPlayerDie", SendMessageOptions.DontRequireReceiver);
+        }
+        */
+        OnPlayerDie();
     }
 }
